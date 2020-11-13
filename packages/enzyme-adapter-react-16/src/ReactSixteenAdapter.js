@@ -34,7 +34,7 @@ import {
   Suspense,
 } from 'react-is';
 import { EnzymeAdapter } from 'enzyme';
-import { typeOfNode } from 'enzyme/build/Utils';
+import { typeOfNode, spyMethod } from 'enzyme/build/Utils';
 import shallowEqual from 'enzyme-shallow-equal';
 import {
   displayNameOfNode,
@@ -708,6 +708,29 @@ class ReactSixteenAdapter extends EnzymeAdapter {
           }
 
           if (isStateful) {
+            if (
+              renderer._instance
+              && el.props === renderer._instance.props
+              && !shallowEqual(context, renderer._instance.context)
+            ) {
+              const { restore } = spyMethod(
+                renderer,
+                '_updateClassComponent',
+                (originalMethod) => function _updateClassComponent(...args) {
+                  const { props } = renderer._instance;
+                  const clonedProps = { ...props };
+                  renderer._instance.props = clonedProps;
+
+                  const result = originalMethod.apply(renderer, args);
+
+                  renderer._instance.props = props;
+                  restore();
+
+                  return result;
+                },
+              );
+            }
+
             // fix react bug; see implementation of `getEmptyStateValue`
             const emptyStateValue = getEmptyStateValue();
             if (emptyStateValue) {

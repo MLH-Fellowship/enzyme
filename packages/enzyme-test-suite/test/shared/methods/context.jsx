@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { expect } from 'chai';
+import sinon from 'sinon-sandbox';
 
 import {
   itIf,
@@ -34,6 +35,101 @@ export default function describeContext({
       return <div>{name}</div>;
     }
     SimpleComponentSFC.contextTypes = contextTypes;
+
+    itIf(is('>= 16'), 'calls componentWillReceiveProps when context is updated', () => {
+      const spy = sinon.spy();
+      const updatedProps = { foo: 'baz' };
+      class Foo extends React.Component {
+        componentWillReceiveProps() {
+          spy('componentWillReceiveProps');
+        }
+
+        render() {
+          const { foo } = this.context;
+          return <div>{foo}</div>;
+        }
+      }
+      Foo.contextTypes = {
+        foo: PropTypes.string,
+      };
+
+      const wrapper = Wrap(
+        <Foo />,
+        {
+          context: { foo: 'bar' },
+        },
+      );
+      wrapper.setContext(updatedProps);
+      expect(spy.args).to.deep.equal([
+        [
+          'componentWillReceiveProps',
+        ],
+      ]);
+      expect(wrapper.context('foo')).to.equal(updatedProps.foo);
+
+      const expectedDebug = isShallow
+        ? `<div>
+  baz
+</div>`
+        : `<Foo>
+  <div>
+    baz
+  </div>
+</Foo>`;
+
+      expect(wrapper.debug()).to.eql(expectedDebug);
+    });
+
+    itIf(is('>= 16.3'), 'calls componentWillReceiveProps and UNSAFE_componentWillReceiveProps when context is updated', () => {
+      const spy = sinon.spy();
+      const updatedProps = { foo: 'baz' };
+      class Foo extends React.Component {
+        componentWillReceiveProps() {
+          spy('componentWillReceiveProps');
+        }
+
+        UNSAFE_componentWillReceiveProps() { // eslint-disable-line camelcase
+          spy('UNSAFE_componentWillReceiveProps');
+        }
+
+        render() {
+          const { foo } = this.context;
+          return <div>{foo}</div>;
+        }
+      }
+      Foo.contextTypes = {
+        foo: PropTypes.string,
+      };
+
+      const wrapper = Wrap(
+        <Foo />,
+        {
+          context: { foo: 'bar' },
+        },
+      );
+      wrapper.setContext(updatedProps);
+      expect(spy.args).to.deep.equal([
+        [
+          'componentWillReceiveProps',
+        ],
+        [
+          'UNSAFE_componentWillReceiveProps',
+        ],
+      ]);
+      expect(wrapper.context('foo')).to.equal(updatedProps.foo);
+
+      const expectedDebug = isShallow
+        ? `<div>
+  baz
+</div>`
+        : `<Foo>
+  <div>
+    baz
+  </div>
+</Foo>`;
+
+      expect(wrapper.debug()).to.eql(expectedDebug);
+    });
 
     it('throws when not called on the root', () => {
       const context = { name: <main /> };
