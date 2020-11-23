@@ -824,12 +824,6 @@ class ShallowWrapper {
               if (typeof instance.componentDidUpdate === 'function') {
                 instance.componentDidUpdate(prevProps, prevState, snapshot);
               }
-            } else if (typeof instance.componentDidUpdate === 'function') {
-              if (lifecycles.componentDidUpdate.prevContext) {
-                instance.componentDidUpdate(prevProps, prevState, prevContext);
-              } else {
-                instance.componentDidUpdate(prevProps, prevState);
-              }
             }
           }
         }

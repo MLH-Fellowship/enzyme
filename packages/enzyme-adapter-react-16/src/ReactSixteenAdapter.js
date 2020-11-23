@@ -34,7 +34,7 @@ import {
   Suspense,
 } from 'react-is';
 import { EnzymeAdapter } from 'enzyme';
-import { typeOfNode } from 'enzyme/build/Utils';
+import { typeOfNode, spyMethod, spyProperty } from 'enzyme/build/Utils';
 import shallowEqual from 'enzyme-shallow-equal';
 import {
   displayNameOfNode,
@@ -651,7 +651,28 @@ class ReactSixteenAdapter extends EnzymeAdapter {
           return renderer.render({ ...elConfig, type: clonedEl.type }, ...rest);
         }
       }
+      if (renderer._instance && typeof renderer._instance.componentDidUpdate === 'function' && typeof renderer._instance.getSnapshotBeforeUpdate !== 'function') {
+        const { restore } = spyMethod(
+          renderer,
+          '_updateClassComponent',
+          (originalMethod) => function _updateClassComponent(...args) {
+            // spy on the _rendered property
+            const { restore: restoreProperty, wasAssigned } = spyProperty(renderer, '_rendered');
+            const { props: prevProps, state: prevState } = renderer._instance;
+            const result = originalMethod.apply(this, args);
 
+            // restore the original underscore property
+
+            restoreProperty();
+            if (wasAssigned()) {
+              renderer._instance.componentDidUpdate(prevProps, prevState);
+            }
+            restore();
+
+            return result;
+          },
+        );
+      }
       return renderedEl;
     };
 

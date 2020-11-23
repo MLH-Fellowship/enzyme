@@ -651,7 +651,7 @@ export default function describeSetProps({
     });
 
     // TODO: assertion output is incorrect after calling setState inside of componentWillReceiveProps
-    itIf(!isShallow, 'calls componentDidUpdate when componentWillReceiveProps sets state', () => {
+    it('calls componentDidUpdate when componentWillReceiveProps sets state', () => {
       const wrapper = Wrap(<WithSetStateInCWRP a="old a" b="old b" />);
       wrapper.setProps({ b: 'new b', d: 'new d' });
 
