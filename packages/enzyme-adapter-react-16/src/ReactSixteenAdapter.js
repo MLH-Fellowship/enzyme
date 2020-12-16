@@ -34,7 +34,7 @@ import {
   Suspense,
 } from 'react-is';
 import { EnzymeAdapter } from 'enzyme';
-import { typeOfNode, spyMethod, spyProperty } from 'enzyme/build/Utils';
+import { typeOfNode } from 'enzyme/build/Utils';
 import shallowEqual from 'enzyme-shallow-equal';
 import {
   displayNameOfNode,
@@ -58,6 +58,7 @@ import {
   getWrappingComponentMountRenderer,
   compareNodeTypeOf,
   spyMethod,
+  spyProperty,
 } from 'enzyme-adapter-utils';
 import findCurrentFiberUsingSlowPath from './findCurrentFiberUsingSlowPath';
 import detectFiberTags from './detectFiberTags';

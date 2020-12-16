@@ -635,7 +635,9 @@ class ShallowWrapper {
               instance.state,
             );
           }
-          if (props) this[UNRENDERED] = cloneElement(adapter, this[UNRENDERED], props);
+          if (props) {
+            this[UNRENDERED] = cloneElement(adapter, this[UNRENDERED], props);
+          }
           this[RENDERER].render(this[UNRENDERED], nextContext, {
             providerValues: this[PROVIDER_VALUES],
           });
@@ -658,8 +660,8 @@ class ShallowWrapper {
                 lifecycles.componentDidUpdate
                 && typeof instance.componentDidUpdate === 'function'
                 && (
-                  !state
-                  || shallowEqual(state, this.instance().state)
+                  !shallowEqual(prevProps, this.instance().props)
+                  || !shallowEqual(state, this.instance().state)
                   || typeof type.getDerivedStateFromProps === 'function'
                 )
               ) {
